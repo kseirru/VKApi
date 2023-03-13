@@ -17,9 +17,9 @@ public class VkMessage {
     @SuppressWarnings("unchecked")
     public VkMessage(Map<String, Object> response) {
         ts = String.valueOf(response.get("ts"));
-        Map<Object, ArrayList<Object>> updates = (Map<Object, ArrayList<Object>>) response.get("updates");
+        ArrayList<Object> updates = (ArrayList<Object>) response.get("updates");
         Map<String, Object> data = (Map<String, Object>) updates.get(0);
-        groupId = (String) data.get("group_id");
+        groupId = String.valueOf(data.get("group_id"));
         if (data.get("type").equals("message_new")) {
             vkEventType = VkEventType.message_new;
         }
@@ -27,10 +27,10 @@ public class VkMessage {
         Map<String, Object> objects = (Map<String, Object>) data.get("object");
         Map<String, String> message = (Map<String, String>) objects.get("message");
 
-        timestamp = message.get("date");
-        authorId = message.get("from_id");
+        timestamp = String.valueOf(message.get("date"));
+        authorId = String.valueOf(message.get("from_id"));
         attachments = Collections.singletonList(message.get("attachments"));
-        content = message.get("text");
+        content = String.valueOf(message.get("text"));
 
     }
 
