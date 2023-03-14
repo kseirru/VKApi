@@ -1,5 +1,7 @@
 package com.kseirru.Models;
 
+import com.kseirru.Models.VKModels.VKMessage;
+import com.kseirru.Models.VKModels.VKUser;
 import com.kseirru.Utils.HTTPClient;
 
 import java.util.ArrayList;
@@ -19,10 +21,10 @@ public class VKApi {
     private int wait = 25;
     public HTTPClient httpClient;
 
-    public Map<VkEventType, ArrayList<VKEventHandlerInterface>> eventHandlers;
+    public Map<VKEventType, ArrayList<VKAbstractEventHandler>> eventHandlers;
 
     @SuppressWarnings("unchecked")
-    public VKApi(String token, String groupId, Map<VkEventType, ArrayList<VKEventHandlerInterface>> eventHandlers) {
+    public VKApi(String token, String groupId, Map<VKEventType, ArrayList<VKAbstractEventHandler>> eventHandlers) {
         httpClient = new HTTPClient();
         this.eventHandlers = eventHandlers;
         this.token = token;
@@ -40,6 +42,8 @@ public class VKApi {
             LongPoolServer = (String) responseMap.get("server");
             ts = Integer.parseInt((String) responseMap.get("ts"));
         }
+
+        this.handleOnReady();
 
         while (true) {
             try {
@@ -63,16 +67,37 @@ public class VKApi {
     }
 
     private void handleNewMessage(Map<String, Object> response) {
-        VkMessage message = new VkMessage(response);
+        VKMessage message = new VKMessage(response);
 
         MessageReceivedContext messageReceivedContext = new MessageReceivedContext(this, message);
 
-        List<VKEventHandlerInterface> newMessageHandlers = eventHandlers.get(VkEventType.message_new);
+        List<VKAbstractEventHandler> newMessageHandlers = eventHandlers.get(VKEventType.message_new);
         if(newMessageHandlers != null) {
-            for(VKEventHandlerInterface handler : newMessageHandlers) {
+            for(VKAbstractEventHandler handler : newMessageHandlers) {
                 handler.onMessageReceived(messageReceivedContext);
             }
         }
+    }
+
+    private void handleOnReady() {
+        List<VKAbstractEventHandler> onReadyHandlers = eventHandlers.get(VKEventType.on_ready);
+        if(onReadyHandlers != null) {
+            for(VKAbstractEventHandler handler : onReadyHandlers) {
+                handler.onReady(new OnReadyEvent(this));
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public VKUser getUser(int userId) {
+        Map<String, String> args = new HashMap<>();
+        args.put("access_token", this.token);
+        args.put("v", this.API_VERSION);
+        args.put("user_ids", String.valueOf(userId));
+        args.put("fields", "about, bdate, city, country, domain, has_photo, has_mobile, sex, status, verified, photo_400_orig");
+        ArrayList<Object> response = (ArrayList<Object>) this.httpClient.execute(this.BASE_URL + "users.get", args).get("response");
+        Map<String, Object> data = (Map<String, Object>) response.get(0);
+        return new VKUser(data);
     }
 
     public String getToken() {

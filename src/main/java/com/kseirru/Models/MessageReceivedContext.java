@@ -1,15 +1,18 @@
 package com.kseirru.Models;
 
+import com.kseirru.Models.VKModels.VKMessage;
+import com.kseirru.Models.VKModels.VKUser;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 public class MessageReceivedContext {
 
-    private VkMessage vkMessage;
+    private VKMessage vkMessage;
     private VKApi VKApi;
 
-    public MessageReceivedContext(VKApi vkApi, VkMessage message) {
+    public MessageReceivedContext(VKApi vkApi, VKMessage message) {
         vkMessage = message;
         VKApi = vkApi;
     }
@@ -18,8 +21,12 @@ public class MessageReceivedContext {
         return VKApi;
     }
 
-    public VkMessage getMessage() {
+    public VKMessage getMessage() {
         return vkMessage;
+    }
+
+    public VKUser getAuthor() {
+        return this.VKApi.getUser(Integer.parseInt(this.getMessage().authorId));
     }
 
     public void sendMessage(String content) {
@@ -31,8 +38,7 @@ public class MessageReceivedContext {
         args.put("disable_mentions", "0");
         args.put("access_token", VKApi.getToken());
         args.put("v", VKApi.getAPI_VERSION());
-        System.out.println(args);
-        System.out.println(VKApi.getHttpClient().execute(VKApi.BASE_URL + "messages.send", args));
+        VKApi.getHttpClient().execute(VKApi.BASE_URL + "messages.send", args);
     }
 
 }

@@ -1,8 +1,8 @@
 package com.kseirru;
 
+import com.kseirru.Models.VKAbstractEventHandler;
 import com.kseirru.Models.VKApi;
-import com.kseirru.Models.VKEventHandlerInterface;
-import com.kseirru.Models.VkEventType;
+import com.kseirru.Models.VKEventType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,7 +11,7 @@ import java.util.Map;
 public class VKApiBuilder {
     private String token;
     private String groupId;
-    private Map<VkEventType, ArrayList<VKEventHandlerInterface>> eventHandlers = new HashMap<>();
+    private Map<VKEventType, ArrayList<VKAbstractEventHandler>> eventHandlers = new HashMap<>();
 
     public VKApiBuilder setToken(String token) {
         this.token = token;
@@ -23,7 +23,7 @@ public class VKApiBuilder {
         return this;
     }
 
-    public VKApiBuilder addEventHandler(VkEventType eventType, VKEventHandlerInterface eventHandler) {
+    public VKApiBuilder addEventHandler(VKEventType eventType, VKAbstractEventHandler eventHandler) {
         if (!this.eventHandlers.containsKey(eventType)) {
             this.eventHandlers.put(eventType, new ArrayList<>());
         }
